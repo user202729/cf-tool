@@ -96,6 +96,7 @@ func (c *Client) Submit(info Info, langID, source string) (err error) {
 
 	color.Green("Submitted")
 
+	// TODO can body be used here?
 	submissions, err := c.WatchSubmission(info, 1, true)
 	if err != nil {
 		return
