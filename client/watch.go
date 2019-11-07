@@ -281,7 +281,7 @@ func parseSubmission(body []byte, cfOffset string) (ret Submission, err error) {
 	}, nil
 }
 
-func watch(url string, channel string, submissions []Submission, maxWidth *int, line bool) (err error) {
+func (c *Client) watch(websocketUrl string, submissionPageURL string, channel string, submissions []Submission, maxWidth *int, line bool) (err error) {
 	idMap := map[uint64]int{}
 	endCount := 0
 	for i, submission := range submissions {
@@ -296,9 +296,30 @@ func watch(url string, channel string, submissions []Submission, maxWidth *int, 
 			Proxy:            http.ProxyFromEnvironment,
 			HandshakeTimeout: 3 * time.Second,
 		}
-		ws, _, err := dialer.Dial(url, nil)
+		ws, _, err := dialer.Dial(websocketUrl, nil)
 		if err != nil {
 			return err
+		}
+
+		{ // there may be status updates between websocket dial and the old webpage fetch
+			newSubmissions, _, err := c.getSubmissions(submissionPageURL, -1, line)
+			if err != nil {
+				return err
+			}
+			for i := range submissions {
+				sub := &submissions[i]
+				updated := false
+				for _, newsub := range newSubmissions { // NOTE O(n^2) solution, but there are few submissions enough
+					if newsub.id == sub.id {
+						*sub = newsub
+						updated = true
+						break
+					}
+				}
+				if !updated {
+					fmt.Printf("Warning: cannot find submission (moved to another page?)\n\n\n\n\n\n\n\n\n\n\n\n")
+				}
+			}
 		}
 
 		f, err := os.OpenFile("/tmp/log.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
@@ -428,7 +449,7 @@ func (c *Client) WatchSubmission(myURL string, n int, line bool) (err error) {
 	url := fmt.Sprintf(`wss://pubsub.codeforces.com/ws/%v?_=%v&tag=&time=&eventid=`,
 		strings.Join(channels[:], "/"), time.Now().UTC().Format("20060102150405"))
 
-	if err = watch(url, channels[0], submissions, &maxWidth, line); err != nil {
+	if err = c.watch(url, myURL, channels[0], submissions, &maxWidth, line); err != nil {
 		ansi.CursorUp(7)
 		refreshLine(7, maxWidth)
 		color.Red("Websocket got a problem:\n%v\nNow auto-refresh the status page\n", err.Error())
