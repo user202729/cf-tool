@@ -1,6 +1,7 @@
 package client
 
 import (
+	"os"
 	"bufio"
 	"bytes"
 	"encoding/json"
@@ -300,13 +301,29 @@ func watch(url string, channel string, submissions []Submission, maxWidth *int, 
 			return err
 		}
 
+		f, err := os.OpenFile("/tmp/log.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+		f.WriteString("==========================\n")
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+
+		var lastId uint64 = 0
 		for endCount != len(submissions) {
 			func() {
 				defer func() {
-					recover()
+					if r := recover(); r != nil {
+						fmt.Printf("Panic %v\n", r)
+					}
 				}()
 
 				_, bytes, err := ws.ReadMessage()
+				if bytes != nil {
+					f.Write(bytes)
+					f.WriteString("\n")
+					f.Sync()
+				}
+
 				if err != nil {
 					endCount = len(submissions)
 					return
@@ -315,6 +332,14 @@ func watch(url string, channel string, submissions []Submission, maxWidth *int, 
 				err = json.Unmarshal(bytes, &recv)
 				if err != nil {
 					return
+				}
+
+				{
+					id := uint64(recv["id"].(float64))
+					if lastId != 0 && lastId != id-1 {
+						fmt.Printf("Note: dropped id %v\n\n\n\n\n\n\n\n\n\n\n\n\n\n", id-1)
+					}
+					lastId = id
 				}
 				c := recv["channel"].(string)
 				if c != channel {
