@@ -187,7 +187,7 @@ func findCfOffset(body []byte) (string, error) {
 }
 
 func findChannel(body []byte) []string {
-	reg := regexp.MustCompile(`name="cc" content="(.+?)"[\s\S]*name="pc" content="(.+?)"`)
+	reg := regexp.MustCompile(`name="(?:cc|pc|gc)" content="(.+?)"`)
 	tmp := reg.FindSubmatch(body)
 	var ret []string
 	for i := 1; i < len(tmp); i++ {
