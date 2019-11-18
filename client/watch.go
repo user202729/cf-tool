@@ -389,7 +389,10 @@ func (c *Client) WatchSubmission(contestID, problemID string, n int, line bool) 
 				lastA[i] = a
 				sub.passed = uint64(submission.D[7].(float64))
 				sub.judged = uint64(submission.D[8].(float64))
-				verdictString := submission.D[6].(string);
+				verdictString := "null";
+				if submission.D[6] != nil {
+					verdictString = submission.D[6].(string);
+				}
 				if !isWait(verdictString) {
 					sub.end = true
 				}
