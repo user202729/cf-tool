@@ -42,7 +42,11 @@ func Pull(args map[string]interface{}) error {
 				return cln.PullContest(contestID, "", currentPath, ac)
 			}
 		}
-		return cln.PullContest(contestID, problemID, path, ac)
+		if args["all"].(bool) {
+			return cln.PullContestEveryone(contestID, problemID, path, ac)
+		} else {
+			return cln.PullContest(contestID, problemID, path, ac)
+		}
 	}
 	if err = work(); err != nil {
 		if err = loginAgain(cfg, cln, err); err == nil {

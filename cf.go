@@ -33,7 +33,7 @@ Usage:
   cf stand [<contest-id>]
   cf sid [<submission-id>] [<contest-id>]
   cf race <contest-id>
-  cf pull [ac] [<contest-id>] [<problem-id>]
+  cf pull [ac] [all] [<contest-id>] [<problem-id>]
   cf clone [ac] <username>
   cf upgrade
 

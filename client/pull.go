@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"errors"
+	"encoding/json"
 	"fmt"
 	"html"
 	"io/ioutil"
@@ -80,6 +81,86 @@ func (c *Client) PullCode(contestID, submissionID, path, ext string, rename bool
 
 	err = ioutil.WriteFile(filename, []byte(code), 0644)
 	return
+}
+
+// PullContestEveryone pull all latest codes or ac codes of contest's problem
+func (c *Client) PullContestEveryone(contestID, problemID, rootPath string, ac bool) (err error) {
+	color.Cyan("Pull code from %v%v, all: true, ac: %v", contestID, problemID, ac)
+
+	resp, err := c.client.Get(c.Host+"/api/contest.status?contestId=1266&from=1&count=1000000000")
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	var result struct {
+		Status string
+		Result []struct{
+			Id int64
+			Verdict string
+			Problem struct{
+				ContestId int64
+				Index string
+			}
+			ProgrammingLanguage	string
+			CreationTimeSeconds int64
+			RelativeTimeSeconds int64
+			//Author
+			Testset string
+			PassedTestCount int64
+			TimeConsumedMillis int64
+			MemoryConsumedBytes int64
+		}
+	}
+	json.Unmarshal(body, &result)
+	if result.Status != "OK" {
+		return errors.New("Network error")
+	}
+	if len(result.Result) == 0 {
+		return errors.New("Cannot find any code to save")
+	}
+
+	problemID = strings.ToLower(problemID)
+
+	color.Cyan("These submissions' codes have been saved.")
+	for _, submission := range result.Result {
+		pid := submission.Problem.Index
+		if problemID != "" && problemID != strings.ToLower(pid) {
+			continue
+		}
+		if ac && submission.Verdict != "OK" {
+			continue
+		}
+		ext, ok := LangsExt[submission.ProgrammingLanguage]
+		if !ok {
+			fmt.Printf("Unsupported language: %v\n", submission.ProgrammingLanguage)
+			ext = ".txt"
+		}
+		path := ""
+		submissionID := fmt.Sprintf("%v", submission.Id)
+		if problemID == "" {
+			path = filepath.Join(rootPath, pid, pid+"_"+submissionID)
+		} else {
+			path = filepath.Join(rootPath, strings.ToLower(problemID)+"_"+submissionID)
+		}
+		filename, err := c.PullCode(
+			contestID,
+			submissionID,
+			path,
+			"."+ext,
+			false,
+		)
+		if err == nil {
+			color.Green(fmt.Sprintf(`Saved %v`, filename))
+		} else {
+			color.Red(fmt.Sprintf(`Error in %v|%v: %v`, contestID, submissionID, err.Error()))
+		}
+	}
+	return nil
 }
 
 // PullContest pull all latest codes or ac codes of contest's problem
