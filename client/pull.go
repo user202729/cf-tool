@@ -87,7 +87,7 @@ func (c *Client) PullCode(contestID, submissionID, path, ext string, rename bool
 func (c *Client) PullContestEveryone(contestID, problemID, rootPath string, ac bool) (err error) {
 	color.Cyan("Pull code from %v%v, all: true, ac: %v", contestID, problemID, ac)
 
-	resp, err := c.client.Get(c.Host+"/api/contest.status?contestId=1266&from=1&count=1000000000")
+	resp, err := c.client.Get(fmt.Sprintf("%v/api/contest.status?contestId=%v&from=1&count=1000000000", c.Host, contestID))
 	if err != nil {
 		return
 	}
