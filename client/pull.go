@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"time"
 	"errors"
 	"encoding/json"
 	"fmt"
@@ -54,19 +55,29 @@ func (c *Client) PullCode(contestID, submissionID, path, ext string, rename bool
 
 	URL := ToGym(fmt.Sprintf(c.Host+"/contest/%v/submission/%v", contestID, submissionID), contestID)
 	client := &http.Client{Jar: c.Jar.Copy()}
-	resp, err := client.Get(URL)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
 
-	message, err := findMessage(body)
-	if err == nil {
-		return "", fmt.Errorf("%v", message)
+	var body []byte
+	for {
+		resp, err := client.Get(URL)
+		if err != nil {
+			return "", err
+		}
+		defer resp.Body.Close()
+		body, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return "", err
+		}
+
+		message, err := findMessage(body)
+		if err == nil {
+			if message == "Too many requests" {
+				fmt.Printf("Too many requests. Waiting for a minute before retrying...\n")
+				time.Sleep(1 * time.Minute)
+				continue
+			}
+			return "", fmt.Errorf("%v", message)
+		}
+		break
 	}
 
 	code, err := findCode(body)
