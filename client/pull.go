@@ -149,7 +149,7 @@ func (c *Client) PullContestEveryone(contestID, problemID, rootPath string, ac b
 		ext, ok := LangsExt[submission.ProgrammingLanguage]
 		if !ok {
 			fmt.Printf("Unsupported language: %v\n", submission.ProgrammingLanguage)
-			ext = ".txt"
+			ext = "txt"
 		}
 		path := ""
 		submissionID := fmt.Sprintf("%v", submission.Id)
