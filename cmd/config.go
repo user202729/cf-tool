@@ -9,7 +9,7 @@ import (
 )
 
 // Config command
-func Config(args map[string]interface{}) error {
+func Config() error {
 	color.Cyan("Configure the tool")
 	ansi.Println(`0) username and password`)
 	ansi.Println(`1) add a template`)

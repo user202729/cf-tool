@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"math/rand"
+	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -771,3 +772,11 @@ func prepareVerdictFormats() (x map[string]string) {
 }
 
 var PreparedVerdictFormats = prepareVerdictFormats()
+
+// Returns true if a given string is an url
+func IsUrl(str string) bool {
+	if _, err := url.ParseRequestURI(str); err == nil {
+		return true
+	}
+	return false
+}

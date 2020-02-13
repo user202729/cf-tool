@@ -55,15 +55,16 @@ func gen(source, currentPath, ext string) error {
 }
 
 // Gen command
-func Gen(args map[string]interface{}) error {
+func Gen(args interface{}) error {
 	cfg := config.New(config.ConfigPath)
 	if len(cfg.Template) == 0 {
 		return errors.New("You have to add at least one code template by `cf config`")
 	}
-
+	parsedArgs, _ := parseArgs(args, ParseRequirement{})
+	alias := parsedArgs.Alias
 	var path string
 
-	if alias, ok := args["<alias>"].(string); ok {
+	if alias != "" {
 		templates := cfg.TemplateByAlias(alias)
 		if len(templates) < 1 {
 			return fmt.Errorf("Cannot find any template with alias %v", alias)
