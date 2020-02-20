@@ -33,6 +33,8 @@ func Eval(args docopt.Opts) error {
 		return Gen(args)
 	} else if parsed.Test {
 		return Test(args)
+	} else if parsed.CustomTest {
+		return CustomTest(parsed)
 	} else if parsed.Watch {
 		return Watch(args)
 	} else if parsed.Open {
@@ -62,6 +64,8 @@ type ParsedArgs struct {
 	ProblemID       string `docopt:"<problem-id>"`
 	SubmissionID    string `docopt:"<submission-id>"`
 	Filename        string `docopt:"<filename>"`
+	LanguageID      string `docopt:"<language-id>"`
+	InputFile       string `docopt:"<input-file>"`
 	Alias           string `docopt:"<alias>"`
 	Accepted        bool   `docopt:"ac"`
 	All             bool   `docopt:"all"`
@@ -73,6 +77,7 @@ type ParsedArgs struct {
 	Parse           bool   `docopt:"parse"`
 	Generate        bool   `docopt:"gen"`
 	Test            bool   `docopt:"test"`
+	CustomTest      bool   `docopt:"customtest"`
 	Watch           bool   `docopt:"watch"`
 	Open            bool   `docopt:"open"`
 	Standings       bool   `docopt:"stand"`

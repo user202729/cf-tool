@@ -29,6 +29,7 @@ Usage:
   cf parse [<url|contest-id>] [<problem-id>]
   cf gen [<alias>]
   cf test [<filename>]
+  cf customtest <filename> <language-id> [<input-file>]
   cf watch [all] [<url|contest-id>] [<problem-id>]
   cf open [<url|contest-id>] [<problem-id>]
   cf stand [<url|contest-id>]
@@ -56,6 +57,8 @@ Examples:
   cf test              Run the commands of a template in current path. Then test all samples.
                        If you want to add a new testcase, create two files "inK.txt" and "ansK.txt"
                        where K is a string with 0~9.
+  cf customtest a.py 31
+  cf customtest a.py 31 input.txt
   cf watch             Watch the first 10 submissions of current contest.
   cf watch all         Watch all submissions of current contest.
   cf open 1136 a       Use default web browser to open the page of contest 1136, problem a.
