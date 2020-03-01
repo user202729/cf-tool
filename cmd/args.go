@@ -170,6 +170,7 @@ var ArgRegStr = [...]string{
 	fmt.Sprintf(`^(?P<groupID>%v)$`, GroupRegStr),
 }
 
+/*
 // ArgTypePathRegStr path
 var ArgTypePathRegStr = [...]string{
 	fmt.Sprintf("%v/%v/((?P<contestID>%v)/((?P<problemID>%v)/)?)?", "%v", "%v", ContestRegStr, ProblemRegStr),
@@ -177,6 +178,7 @@ var ArgTypePathRegStr = [...]string{
 	fmt.Sprintf("%v/%v/((?P<groupID>%v)/((?P<contestID>%v)/((?P<problemID>%v)/)?)?)?", "%v", "%v", GroupRegStr, ContestRegStr, ProblemRegStr),
 	fmt.Sprintf("%v/%v/((?P<problemID>%v)/)?", "%v", "%v", ProblemRegStr),
 }
+*/
 
 // ArgType type
 var ArgType = [...]string{
@@ -217,11 +219,11 @@ func parseArg(arg string) map[string]string {
 	return output
 }
 
-func parsePath(path string) map[string]string {
+func parsePath(path string) (output map[string]string) {
 	path = filepath.ToSlash(path) + "/"
-	output := make(map[string]string)
+	// output := make(map[string]string)
 	cfg := config.Instance
-	for k, problemType := range client.ProblemTypes {
+	for _, (problemType, specifier) := range cfg.PathSpecifier {
 		reg := regexp.MustCompile(fmt.Sprintf(ArgTypePathRegStr[k], cfg.FolderName["root"], cfg.FolderName[problemType]))
 		names := reg.SubexpNames()
 		for i, val := range reg.FindStringSubmatch(path) {
@@ -239,5 +241,5 @@ func parsePath(path string) map[string]string {
 	if output["groupID"] != "" && output["problemType"] == "" {
 		output["problemType"] = "group"
 	}
-	return output
+	//return output
 }
