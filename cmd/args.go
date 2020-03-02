@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 	"path/filepath"
 	"regexp"
 
@@ -41,7 +42,7 @@ type ParsedArgs struct {
 var Args *ParsedArgs
 
 func parseArgs(opts docopt.Opts) error {
-	cfg := config.Instance
+	//cfg := config.Instance
 	cln := client.Instance
 	path, err := os.Getwd()
 	if err != nil {
@@ -117,7 +118,8 @@ func parseArgs(opts docopt.Opts) error {
 		}
 		info.ContestID = "99999"
 	}
-	root := cfg.FolderName["root"]
+	//root := cfg.FolderName["root"]
+	root := "." // TODO
 	info.RootPath = filepath.Join(path, root)
 	for {
 		base := filepath.Base(path)
@@ -130,7 +132,8 @@ func parseArgs(opts docopt.Opts) error {
 		}
 		path = filepath.Dir(path)
 	}
-	info.RootPath = filepath.Join(info.RootPath, cfg.FolderName[info.ProblemType])
+	//info.RootPath = filepath.Join(info.RootPath, cfg.FolderName[info.ProblemType])
+	info.RootPath = filepath.Join(info.RootPath, "problems")
 	Args.Info = info
 	// util.DebugJSON(Args)
 	return nil
@@ -219,11 +222,64 @@ func parseArg(arg string) map[string]string {
 	return output
 }
 
+var specifierToRegex = strings.NewReplacer(
+	"%%", "%",
+	"%problemID%", "(?P<problemID>" + ProblemRegStr + ")",
+	"%contestID%", "(?P<contestID>" + ContestRegStr + ")",
+	"%groupID%", "(?P<groupID>" + GroupRegStr + ")",
+)
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 func parsePath(path string) (output map[string]string) {
-	path = filepath.ToSlash(path) + "/"
+	//path = filepath.ToSlash(path) + "/"
+	components := filepath.SplitList(path)
+
 	// output := make(map[string]string)
 	cfg := config.Instance
-	for _, (problemType, specifier) := range cfg.PathSpecifier {
+	for _, value := range cfg.PathSpecifier {
+		problemType := value[0]
+		var specifier []string
+		for _, value := range strings.Split(value[1], "/") {
+			specifier = append(specifier, specifierToRegex.Replace(regexp.QuoteMeta(value)))
+		}
+		// note that both the path separator "/" and the variable separator "%" must not be
+		// regex meta character for this approach to work
+
+		outer: for length := min(len(specifier), len(components)); length > 0; length-- {
+			reg := regexp.MustCompile("^" + strings.Join(specifier[:length], "/") + "$")
+			names := reg.SubexpNames()
+			output = make(map[string]string)
+			for i, val := range reg.FindStringSubmatch(
+				strings.Join(components[len(components)-length:], "/")) {
+				if names[i] != "" && val != "" {
+					// (how can val be empty anyway?)
+					// it's possible to use noncapturing group to avoid having to check this
+					if existing, ok := output[names[i]]; ok {
+						if existing != val {
+							continue outer
+						}
+					} else {
+						output[names[i]] = val
+					}
+				}
+			}
+			// Full match.
+			output["problemType"] = problemType
+			return nil
+			/*
+			for index, component := range components[len(components) - length] {
+				specifier[index]
+			}
+			*/
+		}
+
+		/*
 		reg := regexp.MustCompile(fmt.Sprintf(ArgTypePathRegStr[k], cfg.FolderName["root"], cfg.FolderName[problemType]))
 		names := reg.SubexpNames()
 		for i, val := range reg.FindStringSubmatch(path) {
@@ -232,7 +288,10 @@ func parsePath(path string) (output map[string]string) {
 			}
 			output["problemType"] = problemType
 		}
+		*/
 	}
+
+	/*
 	if (output["problemType"] != "" && output["problemType"] != "group") ||
 		output["groupID"] == output["contestID"] ||
 		output["groupID"] == fmt.Sprintf("%v%v", output["contestID"], output["problemID"]) {
@@ -241,5 +300,7 @@ func parsePath(path string) (output map[string]string) {
 	if output["groupID"] != "" && output["problemType"] == "" {
 		output["problemType"] = "group"
 	}
-	//return output
+	*/
+
+	return
 }
