@@ -6,6 +6,7 @@ import (
 	"strings"
 	"path/filepath"
 	"regexp"
+	"errors"
 
 	"github.com/docopt/docopt-go"
 	"github.com/xalanq/cf-tool/client"
@@ -42,7 +43,7 @@ type ParsedArgs struct {
 var Args *ParsedArgs
 
 func parseArgs(opts docopt.Opts) error {
-	//cfg := config.Instance
+	cfg := config.Instance
 	cln := client.Instance
 	path, err := os.Getwd()
 	if err != nil {
@@ -118,9 +119,35 @@ func parseArgs(opts docopt.Opts) error {
 		}
 		info.ContestID = "99999"
 	}
+
+	info.PathField = ""
+	for _, value := range cfg.PathSpecifier {
+		if value[0] == info.ProblemType {
+			specifier := value[1]
+			expectedPath := strings.NewReplacer(
+				"%%", "%",
+				"%problemID%", info.ContestID,
+				"%contestID%", info.ProblemID,
+				"%groupID%", info.GroupID,
+			).Replace(specifier)
+			var components []string = strings.Split(expectedPath, "/")
+			for length := len(components); length >= 0; length-- {
+				if strings.HasSuffix(path, filepath.Join(components[:length]...)) {
+					//info.PathField = filepath.Join(string(path), components[length:]...)
+					info.PathField = filepath.Join(append([]string{path}, components[length:]...)...)
+					break
+				}
+			}
+			break
+		}
+	}
+	if info.PathField == "" {
+		return errors.New("Invalid configuration! Need to specify path specifier for " + info.ProblemType)
+	}
+
+	/*
 	//root := cfg.FolderName["root"]
-	root := "." // TODO
-	info.RootPath = filepath.Join(path, root)
+	//info.RootPath = filepath.Join(path, root)
 	for {
 		base := filepath.Base(path)
 		if base == root {
@@ -132,8 +159,8 @@ func parseArgs(opts docopt.Opts) error {
 		}
 		path = filepath.Dir(path)
 	}
-	//info.RootPath = filepath.Join(info.RootPath, cfg.FolderName[info.ProblemType])
-	info.RootPath = filepath.Join(info.RootPath, "problems")
+	//info.RootPath = filepath.Join(info.RootPath, cfg.FolderName[info.ProblemType]
+	*/
 	Args.Info = info
 	// util.DebugJSON(Args)
 	return nil
