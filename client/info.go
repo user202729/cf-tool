@@ -180,6 +180,20 @@ func (info *Info) SubmissionURL(host string) (string, error) {
 	return "", errors.New(ErrorUnknownType)
 }
 
+// HackURL get url for hacking the submission
+func (info *Info) HackURL(host string) (string, error) {
+	if info.SubmissionID == "" {
+		return "", errors.New(ErrorNeedSubmissionID)
+	}
+	if info.ContestID == "" {
+		return info.errorContest()
+	}
+	if info.ProblemType != "contest" {
+		return "", errors.New("Cannot hack problem type " + info.ProblemType)
+	}
+	return fmt.Sprintf(host+"/contest/%v/challenge/%v", info.ContestID, info.SubmissionID), nil
+}
+
 // StandingsURL parse standings url
 func (info *Info) StandingsURL(host string) (string, error) {
 	if info.ContestID == "" {
