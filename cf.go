@@ -162,7 +162,11 @@ Script in template:
 	color.Output = ansi.NewAnsiStdout()
 
 	usage = strings.Replace(usage, `$%version%$`, version, 1)
-	opts, _ := docopt.ParseArgs(usage, os.Args[1:], fmt.Sprintf("Codeforces Tool (cf) %v", version))
+	opts, err1 := docopt.ParseArgs(usage, os.Args[1:], fmt.Sprintf("Codeforces Tool (cf) %v", version))
+	if err1 != nil {
+		color.Red(err1.Error())
+		return
+	}
 	opts[`{version}`] = version
 
 	cfgPath, _ := homedir.Expand(configPath)

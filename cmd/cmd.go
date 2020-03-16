@@ -20,7 +20,10 @@ import (
 func Eval(opts docopt.Opts) error {
 	Args = &ParsedArgs{}
 	fmt.Println(opts)
-	opts.Bind(Args)
+	err := opts.Bind(Args)
+	if err != nil {
+		return err
+	}
 	fmt.Println(Args)
 	if err := parseArgs(opts); err != nil {
 		return err
