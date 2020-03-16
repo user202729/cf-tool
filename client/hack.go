@@ -2,17 +2,20 @@ package client
 
 import (
 	"fmt"
-	//"io/ioutil"
+	"io/ioutil"
 	//"strconv"
 	//"time"
 	"net/url"
 	"errors"
+	"bytes"
 	//"encoding/json"
 
 	"github.com/xalanq/cf-tool/util"
 
 	"github.com/fatih/color"
 )
+
+const ErrorMessage = "You can not hack the submission."
 
 // Hack hack
 func (c *Client) Hack(info Info, input string, generatorLangID, generator string, generatorArguments string) (err error) {
@@ -33,6 +36,9 @@ func (c *Client) Hack(info Info, input string, generatorLangID, generator string
 	if err != nil {
 		return
 	}
+	if bytes.Contains(body, []byte(ErrorMessage)) {
+		return errors.New(ErrorMessage)
+	}
 
 	handle, err := findHandle(body)
 	if err != nil {
@@ -47,7 +53,7 @@ func (c *Client) Hack(info Info, input string, generatorLangID, generator string
 	}
 
 
-	body, err = util.PostBody(c.client, fmt.Sprintf("%v/data/challenge?csrf_token=%v", c.host, csrf), url.Values{
+	resp, err := c.client.PostForm(fmt.Sprintf("%v/data/challenge?csrf_token=%v", c.host, csrf), url.Values{
 		"csrf_token": {csrf},
 		"action": {"challengeFormSubmitted"},
 		"submissionId": {info.SubmissionID},
@@ -61,10 +67,19 @@ func (c *Client) Hack(info Info, input string, generatorLangID, generator string
 		"generatorCmd": {generatorArguments},
 		"programTypeId": {generatorLangID},
 	})
-
 	if err != nil {
 		return
 	}
+	if resp.StatusCode == 403 {
+		return errors.New("403 Forbidden")
+	}
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	//ioutil.WriteFile("/tmp/log_fake_body", body, 0644)
 
 	errMsg, err := findErrorMessage(body)
 	if err == nil {
@@ -72,9 +87,8 @@ func (c *Client) Hack(info Info, input string, generatorLangID, generator string
 	}
 
 	msg, err := findMessage(body)
-	fmt.Printf("msg=%v", msg)
-	if err != nil {
-		return errors.New("Hack failed")
+	if err == nil {
+		color.Cyan("%v\n", msg)
 	}
 
 	//submissions, err := c.WatchSubmission(info, 1, true)

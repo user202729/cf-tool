@@ -30,7 +30,7 @@ If you want to compete, the best command is "cf race"
 Usage:
   cf config
   cf submit [-f <file>] [<specifier>...]
-  cf hack (-f <input-file> | [-l <language-id>] -g <generator> [<generator-arguments>]) [<specifier>...]
+  cf hack (-i <input-file> | [-l <language-id>] -g <generator> [<generator-arguments>]) [<specifier>...]
   cf list [<specifier>...]
   cf parse [<specifier>...]
   cf gen [<alias>]
@@ -49,6 +49,8 @@ Options:
   -h --help            Show this screen.
   --version            Show version.
   -f <file>, --file <file>, <file>
+                       Path to file. E.g. "a.cpp", "./temp/a.cpp"
+  -i <input-file>, --input-file <input-file>, <input-file>
                        Path to file. E.g. "a.cpp", "./temp/a.cpp"
   -l <language-id>, --language-id <language-id>
                        Language ID. Choose "Add a template" option in "cf config"
@@ -76,7 +78,7 @@ Examples:
   cf submit -f a.cpp 100 a
   cf submit contest 100 a
   cf submit gym 100001 a
-  cf hack -f input.txt 100A
+  cf hack -i input.txt 100A
   cf hack -l 31 -g generate.py 100A
   cf list              List all problems' stats of a contest.
   cf list 1119
