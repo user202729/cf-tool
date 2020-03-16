@@ -8,11 +8,13 @@ import (
 	"net/url"
 	"encoding/json"
 
+	"github.com/xalanq/cf-tool/util"
+
 	"github.com/fatih/color"
 )
 
 func (c *Client) CustomTest(langId int, source, input string) (err error) {
-	color.Cyan("Custom Test %v", Langs[strconv.Itoa(langId)])
+	color.Cyan("Custom Test %v", util.Langs[strconv.Itoa(langId)])
 
 	resp, err := c.client.Get(c.host+"/problemset/customtest")
 	if err != nil {

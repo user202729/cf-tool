@@ -30,6 +30,7 @@ If you want to compete, the best command is "cf race"
 Usage:
   cf config
   cf submit [-f <file>] [<specifier>...]
+  cf hack (-f <input-file> | [-l <language-id>] -g <generator> [<generator-arguments>]) [<specifier>...]
   cf list [<specifier>...]
   cf parse [<specifier>...]
   cf gen [<alias>]
@@ -52,6 +53,10 @@ Options:
   -l <language-id>, --language-id <language-id>
                        Language ID. Choose "Add a template" option in "cf config"
                        to view the list of available language ID.
+  -g <generator>, --generator <generator>
+                       Hack test case generator.
+  <generator-arguments>
+                       Arguments for the hack test case generator.
   <specifier>          Any useful text. E.g.
                        "https://codeforces.com/contest/100",
                        "https://codeforces.com/contest/180/problem/A",
@@ -71,6 +76,8 @@ Examples:
   cf submit -f a.cpp 100 a
   cf submit contest 100 a
   cf submit gym 100001 a
+  cf hack -f input.txt 100A
+  cf hack -l 31 -g generate.py 100A
   cf list              List all problems' stats of a contest.
   cf list 1119
   cf parse 100         Fetch all problems' samples of contest 100 into
