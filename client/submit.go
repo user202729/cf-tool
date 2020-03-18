@@ -6,10 +6,12 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"bytes"
 
 	"github.com/xalanq/cf-tool/util"
 
 	"github.com/fatih/color"
+	"github.com/PuerkitoBio/goquery"
 )
 
 func findErrorMessage(body []byte) (string, error) {
@@ -47,12 +49,27 @@ func (c *Client) Submit(info Info, langID, source string) (err error) {
 		return
 	}
 
+	msg, err := findMessage(body)
+	if err == nil {
+		return errors.New(msg) // Example: "No such problem"
+	}
+
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(body))
+	if err != nil {
+		return
+	}
+	realProblemID, exists := doc.Find("select[name=submittedProblemIndex] option[selected=selected]").Attr("value")
+	// realProblemID may be different from info.ProblemID when info.ProblemID is "0"
+	if !exists {
+		return errors.New("Malformed HTML")
+	}
+
 	body, err = util.PostBody(c.client, fmt.Sprintf("%v?csrf_token=%v", URL, csrf), url.Values{
 		"csrf_token":            {csrf},
 		"ftaa":                  {c.Ftaa},
 		"bfaa":                  {c.Bfaa},
 		"action":                {"submitSolutionFormSubmitted"},
-		"submittedProblemIndex": {info.ProblemID},
+		"submittedProblemIndex": {realProblemID},
 		"programTypeId":         {langID},
 		"contestId":             {info.ContestID},
 		"source":                {source},
@@ -69,7 +86,7 @@ func (c *Client) Submit(info Info, langID, source string) (err error) {
 		return errors.New(errMsg)
 	}
 
-	msg, err := findMessage(body)
+	msg, err = findMessage(body)
 	if err != nil {
 		return errors.New("Submit failed")
 	}

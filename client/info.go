@@ -203,11 +203,14 @@ func (info *Info) StandingsURL(host string) (string, error) {
 
 // SubmitURL submit url
 func (info *Info) SubmitURL(host string) (string, error) {
+	if info.ProblemID == "" {
+		return "", errors.New(ErrorNeedProblemID)
+	}
 	URL, err := info.ProblemSetURL(host)
 	if err != nil {
 		return "", err
 	}
-	return URL + "/submit", nil
+	return URL + "/submit/" + info.ProblemID, nil
 }
 
 // OpenURL open url
