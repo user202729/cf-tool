@@ -19,13 +19,17 @@ func Hack() (err error) {
 	}
 	generator := ""
 	input := ""
-	generatorLangID := ""
+	generatorLangID := Args.LanguageID
 	if Args.Generator != "" {
-		generatorFileName, index, err := getOneCode(Args.Generator, cfg.Template)
-		if err != nil {
-			return err
+		generatorFileName := Args.Generator
+		if generatorLangID == "" {
+			index := 0
+			generatorFileName, index, err = getOneCode(Args.Generator, cfg.Template)
+			if err != nil {
+				return err
+			}
+			generatorLangID = cfg.Template[index].Lang
 		}
-		generatorLangID = cfg.Template[index].Lang
 
 		bytes, err := ioutil.ReadFile(generatorFileName)
 		if err != nil {

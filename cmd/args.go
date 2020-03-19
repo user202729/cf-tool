@@ -14,34 +14,34 @@ import (
 
 // ParsedArgs parsed arguments
 type ParsedArgs struct {
-	Info        client.Info
-	File        string
-	Specifier   []string `docopt:"<specifier>"`
-	Alias       string   `docopt:"<alias>"`
-	LanguageID  string   `docopt:"--language-id"`
-	InputFile   string   `docopt:"<input-file>"`
-	Generator   string   `docopt:"--generator"`
-	GeneratorArguments  string   `docopt:"<generator-arguments>"`
-	Accepted    bool     `docopt:"ac"`
-	All         bool     `docopt:"all"`
-	Handle      string   `docopt:"<handle>"`
-	Version     string   `docopt:"{version}"`
-	Config      bool     `docopt:"config"`
-	Submit      bool     `docopt:"submit"`
-	Hack bool     `docopt:"hack"`
-	List        bool     `docopt:"list"`
-	Parse       bool     `docopt:"parse"`
-	Gen         bool     `docopt:"gen"`
-	Test        bool     `docopt:"test"`
-	CustomTest  bool     `docopt:"customtest"`
-	Watch       bool     `docopt:"watch"`
-	Open        bool     `docopt:"open"`
-	Stand       bool     `docopt:"stand"`
-	Sid         bool     `docopt:"sid"`
-	Race        bool     `docopt:"race"`
-	Pull        bool     `docopt:"pull"`
-	Clone       bool     `docopt:"clone"`
-	Upgrade     bool     `docopt:"upgrade"`
+	Info               client.Info
+	File               string
+	Specifier          []string `docopt:"<specifier>"`
+	Alias              string   `docopt:"<alias>"`
+	LanguageID         string   `docopt:"--language-id"`
+	InputFile          string   `docopt:"<input-file>,--input-file"`
+	Generator          string   `docopt:"--generator"`
+	GeneratorArguments string   `docopt:"<generator-arguments>"`
+	Accepted           bool     `docopt:"ac"`
+	All                bool     `docopt:"all"`
+	Handle             string   `docopt:"<handle>"`
+	Version            string   `docopt:"{version}"`
+	Config             bool     `docopt:"config"`
+	Submit             bool     `docopt:"submit"`
+	Hack               bool     `docopt:"hack"`
+	List               bool     `docopt:"list"`
+	Parse              bool     `docopt:"parse"`
+	Gen                bool     `docopt:"gen"`
+	Test               bool     `docopt:"test"`
+	CustomTest         bool     `docopt:"customtest"`
+	Watch              bool     `docopt:"watch"`
+	Open               bool     `docopt:"open"`
+	Stand              bool     `docopt:"stand"`
+	Sid                bool     `docopt:"sid"`
+	Race               bool     `docopt:"race"`
+	Pull               bool     `docopt:"pull"`
+	Clone              bool     `docopt:"clone"`
+	Upgrade            bool     `docopt:"upgrade"`
 }
 
 // Args global variable

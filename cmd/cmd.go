@@ -19,10 +19,16 @@ import (
 // Eval opts
 func Eval(opts docopt.Opts) error {
 	Args = &ParsedArgs{}
-	opts.Bind(Args)
+	fmt.Println(opts)
+	err := opts.Bind(Args)
+	if err != nil {
+		return err
+	}
+	fmt.Println(Args)
 	if err := parseArgs(opts); err != nil {
 		return err
 	}
+	fmt.Println(Args)
 	if Args.Config {
 		return Config()
 	} else if Args.Submit {
@@ -56,7 +62,7 @@ func Eval(opts docopt.Opts) error {
 	} else if Args.Upgrade {
 		return Upgrade()
 	}
-	return nil
+	return errors.New("Unknown command")
 }
 
 func getSampleID() (samples []string) {
