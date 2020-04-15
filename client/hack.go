@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"errors"
 	"bytes"
+	"regexp"
 	"mime/multipart"
 	//"encoding/json"
 
@@ -98,9 +99,11 @@ func (c *Client) Hack(info Info, input string, generatorLangID, generator string
 
 	//ioutil.WriteFile("/tmp/log_fake_body", body, 0644)
 
-	errMsg, err := findErrorMessage(body)
-	if err == nil {
-		return errors.New(errMsg)
+	//errMsg, err := findErrorMessage(body)
+	reg := regexp.MustCompile(`<div class="error">(.*?)</div>`)
+	tmp := reg.FindSubmatch(body)
+	if tmp != nil {
+		return errors.New(string(tmp[1]))
 	}
 
 	msg, err := findMessage(body)
