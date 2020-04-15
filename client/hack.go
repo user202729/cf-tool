@@ -5,9 +5,10 @@ import (
 	"io/ioutil"
 	//"strconv"
 	//"time"
-	"net/url"
+	"net/http"
 	"errors"
 	"bytes"
+	"mime/multipart"
 	//"encoding/json"
 
 	"github.com/xalanq/cf-tool/util"
@@ -52,26 +53,42 @@ func (c *Client) Hack(info Info, input string, generatorLangID, generator string
 		return
 	}
 
+	URL = fmt.Sprintf("%v/data/challenge?csrf_token=%v", c.host, csrf)
 
-	resp, err := c.client.PostForm(fmt.Sprintf("%v/data/challenge?csrf_token=%v", c.host, csrf), url.Values{
-		"csrf_token": {csrf},
-		"action": {"challengeFormSubmitted"},
-		"submissionId": {info.SubmissionID},
-		"previousUrl": {URL},
-		"inputType": {inputType},
-
-		"testcase": {input},
-		"testcaseFromFile" : {""},
-
-		"generatorSourceFile": {generator},
-		"generatorCmd": {generatorArguments},
-		"programTypeId": {generatorLangID},
-	})
-	if err != nil {
-		return
+	var b bytes.Buffer
+    w := multipart.NewWriter(&b)
+	for fieldname, value := range map[string]string{
+		"csrf_token":    csrf,
+		"action":        "challengeFormSubmitted",
+		"submissionId":  info.SubmissionID,
+		"previousUrl":   URL,
+		"inputType":     inputType,
+		"testcase":      input, // may use "testcaseFromFile" form field instead
+		"generatorCmd":  generatorArguments,
+		"programTypeId": generatorLangID,
+	} {
+		err = w.WriteField(fieldname, value)
+		if err != nil { return }
 	}
+
+	fw, err := w.CreateFormFile("generatorSourceFile", "generator") // The actual file name is not important
+    if err != nil { return }
+    _, err = fw.Write([]byte(generator))
+    if err != nil { return }
+
+    w.Close()
+
+    req, err := http.NewRequest("POST", URL, &b)
+    if err != nil { return }
+    req.Header.Set("Content-Type", w.FormDataContentType())
+
+    resp, err := c.client.Do(req)
+	if err != nil { return }
 	if resp.StatusCode == 403 {
 		return errors.New("403 Forbidden")
+	}
+	if resp.StatusCode != 200 {
+		return errors.New(fmt.Sprintf("Status code %v", resp.StatusCode))
 	}
 	defer resp.Body.Close()
 	body, err = ioutil.ReadAll(resp.Body)
@@ -90,6 +107,7 @@ func (c *Client) Hack(info Info, input string, generatorLangID, generator string
 	if err == nil {
 		color.Cyan("%v\n", msg)
 	}
+	color.Green("Submitted")
 
 	//submissions, err := c.WatchSubmission(info, 1, true)
 	//if err != nil {
