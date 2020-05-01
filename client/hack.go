@@ -20,7 +20,7 @@ import (
 const ErrorMessage = "You can not hack the submission."
 
 // Hack hack
-func (c *Client) Hack(info Info, input string, generatorLangID, generator string, generatorArguments string) (err error) {
+func (c *Client) Hack(info Info, input string, generatorLangID, generator, generatorFileName, generatorArguments string) (err error) {
 	color.Cyan("Hack " + info.Hint())
 
 	if (input == "") == (generator == "") {
@@ -72,7 +72,7 @@ func (c *Client) Hack(info Info, input string, generatorLangID, generator string
 		if err != nil { return }
 	}
 
-	fw, err := w.CreateFormFile("generatorSourceFile", "generator") // The actual file name is not important
+	fw, err := w.CreateFormFile("generatorSourceFile", generatorFileName)
     if err != nil { return }
     _, err = fw.Write([]byte(generator))
     if err != nil { return }

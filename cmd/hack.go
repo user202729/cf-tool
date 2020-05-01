@@ -3,6 +3,7 @@ package cmd
 import (
 	"io/ioutil"
 	"errors"
+	"path/filepath"
 
 	"github.com/xalanq/cf-tool/client"
 	"github.com/xalanq/cf-tool/config"
@@ -18,20 +19,21 @@ func Hack() (err error) {
 		return errors.New("Exactly one of <input-file> or <generator> must be nonempty")
 	}
 	generator := ""
+	generatorPath := ""
 	input := ""
 	generatorLangID := Args.LanguageID
 	if Args.Generator != "" {
-		generatorFileName := Args.Generator
+		generatorPath = Args.Generator
 		if generatorLangID == "" {
 			index := 0
-			generatorFileName, index, err = getOneCode(Args.Generator, cfg.Template)
+			generatorPath, index, err = getOneCode(Args.Generator, cfg.Template)
 			if err != nil {
 				return err
 			}
 			generatorLangID = cfg.Template[index].Lang
 		}
 
-		bytes, err := ioutil.ReadFile(generatorFileName)
+		bytes, err := ioutil.ReadFile(generatorPath)
 		if err != nil {
 			return err
 		}
@@ -44,9 +46,10 @@ func Hack() (err error) {
 		input = string(bytes)
 	}
 
-	if err = cln.Hack(info, input, generatorLangID, generator, Args.GeneratorArguments); err != nil {
+	generatorFileName := filepath.Base(generatorPath)
+	if err = cln.Hack(info, input, generatorLangID, generator, generatorFileName, Args.GeneratorArguments); err != nil {
 		if err = loginAgain(cln, err); err == nil {
-			err = cln.Hack(info, input, generatorLangID, generator, Args.GeneratorArguments)
+			err = cln.Hack(info, input, generatorLangID, generator, generatorFileName, Args.GeneratorArguments)
 		}
 	}
 	return
