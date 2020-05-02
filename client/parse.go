@@ -1,7 +1,6 @@
 package client
 
 import (
-	"bytes"
 	"fmt"
 	"html"
 	"io/ioutil"
@@ -39,6 +38,13 @@ func findSample(body []byte) (input [][]byte, output [][]byte, err error) {
 	return
 }
 
+var standardIORegex = regexp.MustCompile(
+	`<div class="input-file">\s*<div class="property-title">input</div>\s*` +
+	`(standard input|<span class="tex-font-style-sl">standard input</span>)` +
+	`</div>\s*<div class="output-file">\s*<div class="property-title">output</div>\s*` +
+	`(standard output|<span class="tex-font-style-sl">standard output</span>)` +
+	`</div>`)
+
 // ParseProblem parse problem to path. mu can be nil
 func (c *Client) ParseProblem(URL, path string, mu *sync.Mutex) (samples int, standardIO bool, err error) {
 	body, err := util.GetBody(c.client, URL)
@@ -57,7 +63,7 @@ func (c *Client) ParseProblem(URL, path string, mu *sync.Mutex) (samples int, st
 	}
 
 	standardIO = true
-	if !bytes.Contains(body, []byte(`<div class="input-file"><div class="property-title">input</div>standard input</div><div class="output-file"><div class="property-title">output</div>standard output</div>`)) {
+	if !standardIORegex.Match(body) {
 		standardIO = false
 	}
 
