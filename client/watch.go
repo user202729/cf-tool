@@ -300,6 +300,10 @@ func (c *Client) WatchSubmission(info Info, n int, line bool) (submissions []Sub
 		return
 	}
 
+	if info.ContestID == "0" {
+		URL = c.host+"/problemset/status" // DEBUG
+	}
+
 	maxWidth := 0
 	first := true
 
